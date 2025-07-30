@@ -31,6 +31,7 @@ module uart_tx #(
     input [7:0] i_tx_byte, // sending byte
     
     output reg tx_serial, // output serial
+    output o_tx_active,   // High while transmitting
     output o_tx_done
     );
 
@@ -45,8 +46,10 @@ reg [15:0] m_clock_count = 0;
 reg [2:0] m_tx_bit_index = 0;
 reg [7:0] r_tx_data = 0; // shift register for the byte  
 
+reg m_tx_active = 0;
 reg m_tx_done = 0; // updates internall inside always posedge block
 
+assign o_tx_active = m_tx_active;
 assign o_tx_done = m_tx_done;
 
 always @(posedge clk)
@@ -59,6 +62,8 @@ begin
             m_clock_count <= 0;
             m_tx_bit_index <= 0;
             r_tx_data <= 0;
+            m_tx_active <= 0;
+            m_tx_done <= 0;
         end 
     else
         begin
@@ -72,6 +77,7 @@ begin
                         if (tx_dv)
                         begin
                            r_tx_data <= i_tx_byte;
+                           m_tx_active <= 1'b1;
                            m_state <= S_START;                                                                                                 
                         end
                     end
@@ -123,6 +129,7 @@ begin
                         else
                             begin 
                                 m_clock_count <= 0;
+                                m_tx_active <= 0;
                                 m_tx_done <= 1'b1;
                                 m_state <= S_IDLE;
                             end

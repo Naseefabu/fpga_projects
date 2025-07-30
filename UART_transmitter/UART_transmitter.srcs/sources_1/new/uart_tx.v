@@ -80,7 +80,7 @@ begin
                 end
             S_DATA:
                 begin
-                tx_serial = r_tx_data[m_tx_bit_index]; // enable this signal output until next CLOCKS_PER_BIT done!
+                tx_serial <= r_tx_data[m_tx_bit_index]; // enable this signal output until next CLOCKS_PER_BIT done!
                 if (m_clock_count < CLOCKS_PER_BIT -1)
                     begin
                         m_clock_count <= m_clock_count + 1;
@@ -88,12 +88,22 @@ begin
                     end else
                     begin
                         m_clock_count <= 0;
-                        m_tx_bit_index <= m_tx_bit_index + 1;
+                        
+                        if (m_tx_bit_index < 7)
+                            begin
+                                m_tx_bit_index <= m_tx_bit_index + 1; 
+                                m_state <= S_DATA;
+                            end 
+                        else
+                            begin
+                                m_tx_bit_index <= 0;
+                                m_state <= S_STOP;
+                            end
                     end
                 end
             S_STOP:
                 begin
-                
+                    
                 end        
             default:
                 begin

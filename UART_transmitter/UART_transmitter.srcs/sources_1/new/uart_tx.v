@@ -27,16 +27,17 @@ module uart_tx #(
 )(
     input clk,
     input reset,
-    input tx_dv,
-    input [7:0] i_tx_byte,
+    input tx_dv, // send data valid or not
+    input [7:0] i_tx_byte, // sending byte
     
-    output reg tx_serial
+    output reg tx_serial, // output serial
+    output o_tx_done
     );
 
-parameter S_IDLE = 3'b000; // waiting something to happen
-parameter S_START = 3'b001; // already happened (high to low signal)
-parameter S_DATA = 3'b010; // transfer 8 bit data
-parameter S_STOP = 3'b011; // signal to stop
+parameter S_IDLE = 3'b000;  // Waiting for tx_dv
+parameter S_START = 3'b001; // Send start bit (low)
+parameter S_DATA = 3'b010;  // Send 8 data bits (LSB first)
+parameter S_STOP = 3'b011;  // Send stop bit (high)stop
 
 reg [2:0] m_state = S_IDLE;
 reg [15:0] m_clock_count = 0;
@@ -44,16 +45,24 @@ reg [15:0] m_clock_count = 0;
 reg [2:0] m_tx_bit_index = 0;
 reg [7:0] r_tx_data = 0; // shift register for the byte  
 
+reg m_tx_done = 0; // updates internall inside always posedge block
 
+assign o_tx_done = m_tx_done;
 
 always @(posedge clk)
 begin
     if (reset)
         begin
+            m_tx_bit_index = 0;
             m_state <= S_IDLE;
+            tx_serial <= 1'b1; // idle high
+            m_clock_count <= 0;
+            m_tx_bit_index <= 0;
+            r_tx_data <= 0;
         end 
     else
         begin
+            m_tx_done <= 0;  
             case (m_state)
                 S_IDLE:
                     begin
@@ -114,12 +123,13 @@ begin
                         else
                             begin 
                                 m_clock_count <= 0;
+                                m_tx_done <= 1'b1;
                                 m_state <= S_IDLE;
                             end
                     end        
                 default:
                     begin
-                        m_state <= S_IDLE;
+                        m_state <= S_IDLE; // for safety
                     end
             endcase
         end 

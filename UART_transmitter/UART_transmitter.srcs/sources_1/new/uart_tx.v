@@ -49,77 +49,79 @@ reg [7:0] r_tx_data = 0; // shift register for the byte
 always @(posedge clk)
 begin
     if (reset)
-    begin
-        m_state <= S_IDLE;
-    end else
-    begin
-        case (m_state)
-            S_IDLE:
-                begin
-                    tx_serial <= 1'b1;
-                    m_clock_count <= 0;
-                    
-                    if (tx_dv)
+        begin
+            m_state <= S_IDLE;
+        end 
+    else
+        begin
+            case (m_state)
+                S_IDLE:
                     begin
-                       r_tx_data <= i_tx_byte;
-                       m_state <= S_START;                                                                                                 
-                    end
-                end
-            S_START:
-                begin
-                    tx_serial <= 1'b0; // start bit 0 (low signal -> signals reader to read)
-                    if (m_clock_count < CLOCKS_PER_BIT -1)
-                    begin
-                        m_clock_count <= m_clock_count + 1;
-                        m_state <= S_START;
-                    end else
-                    begin 
-                        m_clock_count <= 0;
-                        m_state <= S_DATA;
-                    end
-                end
-            S_DATA:
-                begin
-                tx_serial <= r_tx_data[m_tx_bit_index]; // enable this signal output until next CLOCKS_PER_BIT done!
-                if (m_clock_count < CLOCKS_PER_BIT -1)
-                    begin
-                        m_clock_count <= m_clock_count + 1;
-                        m_state <= S_DATA;
-                    end else
-                    begin
+                        tx_serial <= 1'b1;
                         m_clock_count <= 0;
                         
-                        if (m_tx_bit_index < 7)
+                        if (tx_dv)
+                        begin
+                           r_tx_data <= i_tx_byte;
+                           m_state <= S_START;                                                                                                 
+                        end
+                    end
+                S_START:
+                    begin
+                        tx_serial <= 1'b0; // start bit 0 (low signal -> signals reader to read)
+                        if (m_clock_count < CLOCKS_PER_BIT -1)
+                        begin
+                            m_clock_count <= m_clock_count + 1;
+                            m_state <= S_START;
+                        end else
+                        begin 
+                            m_clock_count <= 0;
+                            m_state <= S_DATA;
+                        end
+                    end
+                S_DATA:
+                    begin
+                    tx_serial <= r_tx_data[m_tx_bit_index]; // enable this signal output until next CLOCKS_PER_BIT done!
+                    if (m_clock_count < CLOCKS_PER_BIT -1)
+                        begin
+                            m_clock_count <= m_clock_count + 1;
+                            m_state <= S_DATA;
+                        end 
+                    else
+                        begin
+                            m_clock_count <= 0;
+                            
+                            if (m_tx_bit_index < 7)
+                                begin
+                                    m_tx_bit_index <= m_tx_bit_index + 1; 
+                                    m_state <= S_DATA;
+                                end 
+                            else
+                                begin
+                                    m_tx_bit_index <= 0;
+                                    m_state <= S_STOP;
+                                end
+                        end
+                    end
+                S_STOP:
+                    begin
+                        tx_serial <= 1'b1; // stop bit 1 (high signal -> signals reader to stop reading)
+                        if (m_clock_count < CLOCKS_PER_BIT - 1) // send stop bit until CLOCKS_PER_BIT
                             begin
-                                m_tx_bit_index <= m_tx_bit_index + 1; 
-                                m_state <= S_DATA;
-                            end 
-                        else
-                            begin
-                                m_tx_bit_index <= 0;
+                                m_clock_count <= m_clock_count + 1; 
                                 m_state <= S_STOP;
                             end
+                        else
+                            begin 
+                                m_clock_count <= 0;
+                                m_state <= S_IDLE;
+                            end
+                    end        
+                default:
+                    begin
+                        m_state <= S_IDLE;
                     end
-                end
-            S_STOP:
-                begin
-                    tx_serial <= 1'b1; // stop bit 1 (high signal -> signals reader to stop reading)
-                    if (m_clock_count < CLOCKS_PER_BIT - 1) // send stop bit until CLOCKS_PER_BIT
-                        begin
-                            m_clock_count = m_clock_count + 1; 
-                            m_state <= S_STOP;
-                        end
-                    else
-                        begin 
-                            m_clock_count = 0;
-                            m_state <= S_IDLE;
-                        end
-                end        
-            default:
-                begin
-                    m_state <= S_IDLE;
-                end
-        endcase
-    end 
+            endcase
+        end 
 end
 endmodule

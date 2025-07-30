@@ -3,12 +3,12 @@
 # SW Build 3865809 on Sun May  7 15:05:29 MDT 2023
 # IP Build 3864474 on Sun May  7 20:36:21 MDT 2023
 # SharedData Build 3865790 on Sun May 07 13:33:03 MDT 2023
-# Start of session at: Wed Jul 30 17:10:25 2025
-# Process ID: 36536
-# Current directory: D:/fpga_projects/UART_transmitter/UART_transmitter.runs/synth_1
-# Command line: vivado.exe -log top.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source top.tcl
-# Log file: D:/fpga_projects/UART_transmitter/UART_transmitter.runs/synth_1/top.vds
-# Journal file: D:/fpga_projects/UART_transmitter/UART_transmitter.runs/synth_1\vivado.jou
+# Start of session at: Wed Jul 30 17:11:07 2025
+# Process ID: 7820
+# Current directory: D:/fpga_projects/UART_transmitter/UART_transmitter.runs/impl_1
+# Command line: vivado.exe -log top.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source top.tcl -notrace
+# Log file: D:/fpga_projects/UART_transmitter/UART_transmitter.runs/impl_1/top.vdi
+# Journal file: D:/fpga_projects/UART_transmitter/UART_transmitter.runs/impl_1\vivado.jou
 # Running On: LAPTOP-RAFKQ2CB, OS: Windows, CPU Frequency: 2419 MHz, CPU Physical cores: 24, Host memory: 34070 MB
 #-----------------------------------------------------------
 source top.tcl -notrace

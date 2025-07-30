@@ -103,11 +103,21 @@ begin
                 end
             S_STOP:
                 begin
-                    
+                    tx_serial <= 1'b1; // stop bit 1 (high signal -> signals reader to stop reading)
+                    if (m_clock_count < CLOCKS_PER_BIT - 1) // send stop bit until CLOCKS_PER_BIT
+                        begin
+                            m_clock_count = m_clock_count + 1; 
+                            m_state <= S_STOP;
+                        end
+                    else
+                        begin 
+                            m_clock_count = 0;
+                            m_state <= S_IDLE;
+                        end
                 end        
             default:
                 begin
-                
+                    m_state <= S_IDLE;
                 end
         endcase
     end 
